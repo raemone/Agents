@@ -1,11 +1,10 @@
-﻿using DispatcherAgent.Utils;
-using System.Diagnostics;
+﻿using System.Diagnostics;
 
-namespace DispatcherAgent.Model
+namespace DispatcherAgent.Utils
 {
     public class PerfTelemetryStore
     {
-        private static Dictionary<string,List<PerfTelemetry>> _telemetry = new();
+        private static Dictionary<string, List<PerfTelemetry>> _telemetry = new();
         public static void AddTelemetry(string areaName, PerfTelemetry telemetry)
         {
             if (!_telemetry.ContainsKey(areaName))
