@@ -33,9 +33,26 @@ It is likely other clients will work properly with it, as long as OAuth is setup
 
 ### Clone Sample and confirm builds locally
 
+To begin, clone this repository. all necessary assets are found in the /Samples folder. This project is setup to use paths and packages referenced in the various prop files in the root of the samples directory.
+
+- Once you have cloned the project open the visual studio solution using Visual Studio 2022+ in the directory samples/complex/dispatcher/dotnet.
+- Build the project in Visual Studio.  this will restore all missing dependencies and verify that the project is ready to be used.
+- - if needed, resolve any missing dependencies or build complaints before proceeding.
+
 ### Identities
 
-- Azure Bot Service Bot identity
+#### Azure Bot Service Bot identity
+
+This demonstrator is setup to use two identities for the Azure Bot Service(ABS) registration.
+
+- ABS to Agent identity. This identity is used to connect between ABS and your Agent. You have a few options here, however we will cover only 2 for the purposes of this demonstrator.
+- - Local workstation runtime.
+
+To support running the Agent on your desktop, you will need to create a Application Identity in Azure with a Client secret or Client certificate.  This identity should be in the same tenant that your going to configure the ABS Service in.
+
+- ABS OAuth Identity. This identity is used to create a token for a user. This user access token can then be accessed by the Agent SDK for use to exchange for a downstream service.
+
+- 
 - OnBehalf of Identity for communicating to Microsoft Copilot Studio 
 
 ### Azure OpenAI

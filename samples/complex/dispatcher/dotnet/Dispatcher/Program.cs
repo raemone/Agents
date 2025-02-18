@@ -21,6 +21,7 @@ builder.Services.AddHttpClient();
 builder.Services.AddBotAspNetAuthentication(builder.Configuration);
 builder.Services.AddAzureOpenAIChatCompletion("gpt-4o", builder.Configuration["AOAI_ENDPOINT"]!.ToString(), builder.Configuration["AOAI_APIKEY"]!.ToString());
 
+
 BotSetup(builder);
 
 var app = builder.Build();
