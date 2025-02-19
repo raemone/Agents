@@ -41,16 +41,28 @@ To begin, clone this repository. all necessary assets are found in the /Samples 
 
 ### Identities
 
+This demonstrator is setup to use two identities Entra ID based identites and one API Key identity for Azure OpenAI.  Thease instructions will guide you though the required configuration for the identities you need to setup. 
+
 #### Azure Bot Service Bot identity
 
-This demonstrator is setup to use two identities for the Azure Bot Service(ABS) registration.
+> [!Note]
+> **To Run on your Local workstation**, To support running the Agent on your desktop, you will need to create a Application Identity in Azure with a Client secret or Client certificate.  This identity should be in the same tenant that will configure the ABS Service in.
+>
 
-- ABS to Agent identity. This identity is used to connect between ABS and your Agent. You have a few options here, however we will cover only 2 for the purposes of this demonstrator.
-- - Local workstation runtime.
+> [!Note]
+> **To Run on in Azure**, it is recommend that you use a managed identity and FIC to configure ABS related connections, however it is not required, For the purposes of this set of instructions we will not walk though this configuraiton
+>
 
-To support running the Agent on your desktop, you will need to create a Application Identity in Azure with a Client secret or Client certificate.  This identity should be in the same tenant that your going to configure the ABS Service in.
+- **ABS to Agent identity.** This identity is used to connect between ABS and your Agent. You have a few options here, however we will cover only 2 for the purposes of this demonstrator.
+  - Create an Azure App identity within the same tenant you will setup your ABS server in.
+    - This identity should be configured with Client Secret or Client Certificate identity. if you use Client Certificate, the Certiifcate must be registred on your local workstation.
+    - This app does not need a redirect URI
+    - Once created, Capture the following information:
+      - Client\ApplicationID 
+      - TenantID
+      - Client Secret (if so configured)
 
-- ABS OAuth Identity. This identity is used to create a token for a user. This user access token can then be accessed by the Agent SDK for use to exchange for a downstream service.
+- ABS OAuth Identity. This identity is used as the broker identity to exchange a user token for a downstream service. This user access token can then be accessed by the Agent SDK for use to exchange for a downstream service. This identity will have the API scopes setup on it for accessing Copilot Studio
 
 - 
 - OnBehalf of Identity for communicating to Microsoft Copilot Studio 
