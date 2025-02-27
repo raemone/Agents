@@ -1,12 +1,10 @@
 ﻿// Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
 
+using Microsoft.Agents.BotBuilder;
+using Microsoft.Agents.Hosting.AspNetCore;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.Agents.Hosting.AspNetCore;
-using System.Threading;
-using System.Threading.Tasks;
-using Microsoft.Agents.BotBuilder;
 
 namespace EchoBot
 {

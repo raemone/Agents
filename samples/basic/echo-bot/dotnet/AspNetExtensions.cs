@@ -1,23 +1,15 @@
 ﻿// Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
 
-using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.Agents.Authentication;
-using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.DependencyInjection;
-using Microsoft.IdentityModel.Tokens;
-using System;
-using System.Collections.Generic;
-using System.Globalization;
-using Microsoft.IdentityModel.Protocols.OpenIdConnect;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Protocols;
-using System.Collections.Concurrent;
-using System.Net.Http;
-using System.Threading.Tasks;
+using Microsoft.IdentityModel.Protocols.OpenIdConnect;
+using Microsoft.IdentityModel.Tokens;
 using Microsoft.IdentityModel.Validators;
+using System.Collections.Concurrent;
+using System.Globalization;
 using System.IdentityModel.Tokens.Jwt;
-using System.Linq;
-using Microsoft.Extensions.Logging;
 
 namespace Microsoft.Agents.Samples
 {
@@ -99,23 +91,23 @@ namespace Microsoft.Agents.Samples
             }
 
             bool isGov = tokenValidationSection.GetValue<bool>("IsGov", false);
-            var azureBotServiceTokenHandling = tokenValidationSection.GetValue<bool>("AzureBotServiceTokenHandling", true);
+            bool azureBotServiceTokenHandling = tokenValidationSection.GetValue<bool>("AzureBotServiceTokenHandling", true);
 
             // If the `AzureBotServiceOpenIdMetadataUrl` setting is not specified, use the default based on `IsGov`.  This is what is used to authenticate ABS tokens.
-            var azureBotServiceOpenIdMetadataUrl = tokenValidationSection["AzureBotServiceOpenIdMetadataUrl"];
+            string? azureBotServiceOpenIdMetadataUrl = tokenValidationSection["AzureBotServiceOpenIdMetadataUrl"];
             if (string.IsNullOrEmpty(azureBotServiceOpenIdMetadataUrl))
             {
                 azureBotServiceOpenIdMetadataUrl = isGov ? AuthenticationConstants.GovAzureBotServiceOpenIdMetadataUrl : AuthenticationConstants.PublicAzureBotServiceOpenIdMetadataUrl;
             }
 
             // If the `OpenIdMetadataUrl` setting is not specified, use the default based on `IsGov`.  This is what is used to authenticate Entra ID tokens.
-            var openIdMetadataUrl = tokenValidationSection["OpenIdMetadataUrl"];
+            string? openIdMetadataUrl = tokenValidationSection["OpenIdMetadataUrl"];
             if (string.IsNullOrEmpty(openIdMetadataUrl))
             {
                 openIdMetadataUrl = isGov ? AuthenticationConstants.GovOpenIdMetadataUrl : AuthenticationConstants.PublicOpenIdMetadataUrl;
             }
 
-            var openIdRefreshInterval = tokenValidationSection.GetValue<TimeSpan>("OpenIdMetadataRefresh", BaseConfigurationManager.DefaultAutomaticRefreshInterval);
+            TimeSpan openIdRefreshInterval = tokenValidationSection.GetValue<TimeSpan>("OpenIdMetadataRefresh", BaseConfigurationManager.DefaultAutomaticRefreshInterval);
 
             services.AddAuthentication(options =>
             {
@@ -145,7 +137,7 @@ namespace Microsoft.Agents.Samples
                     // Create a ConfigurationManager based on the requestor.  This is to handle ABS non-Entra tokens.
                     OnMessageReceived = async context =>
                     {
-                        var authorizationHeader = context.Request.Headers.Authorization.ToString();
+                        string authorizationHeader = context.Request.Headers.Authorization.ToString();
 
                         if (string.IsNullOrEmpty(authorizationHeader))
                         {
@@ -165,7 +157,7 @@ namespace Microsoft.Agents.Samples
                         }
 
                         JwtSecurityToken token = new(parts[1]);
-                        var issuer = token.Claims.FirstOrDefault(claim => claim.Type == AuthenticationConstants.IssuerClaim)?.Value;
+                        string? issuer = token.Claims.FirstOrDefault(claim => claim.Type == AuthenticationConstants.IssuerClaim)?.Value;
 
                         if (azureBotServiceTokenHandling && AuthenticationConstants.BotFrameworkTokenIssuer.Equals(issuer))
                         {
