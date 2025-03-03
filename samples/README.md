@@ -28,6 +28,7 @@ To debug your Agent in `localhost` you can:
 1. Run the script `_tools/configure-abs-tunnel.sh`.
   1. This script configures devtunnels and ABS, using the machine name, and produces a `.env` file.
 1. Copy the generated `<your-machine>.env` file to the sample folder with file name `.env`.
+1. Start the tunnel before debugging `devtunnel host <tunnel_id>`
 
 > [!Tip]
 > You can use the same ABS instance and tunnel to debug any of these samples, with the only caveat that you can only use one at a time.
