@@ -19,9 +19,8 @@
     "docker": "docker build -t \"$npm_package_name:$npm_package_version\" ."
   },
   "dependencies": {
-    "@microsoft/agents-bot-hosting": "0.1.20",
-    "express": "^5.0.1",
-    "express-rate-limit": "^7.5.0"
+    "@microsoft/agents-bot-hosting": "^0.1.27",
+    "express": "^5.0.1"
   },
   "devDependencies": {
     "@microsoft/teams-app-test-tool": "^0.2.6",
