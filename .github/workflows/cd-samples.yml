@@ -40,7 +40,7 @@ jobs:
           npm install
           npm run build
       
-      - name: Build docker iamge dotnet Echo bot
+      - name: Build docker image dotnet Echo bot
         working-directory: ./samples/basic/echo-bot/dotnet/
         run: |
           dotnet publish /t:PublishContainer /p:ContainerRepository=dotnet-echo-bot --os linux --arch x64
