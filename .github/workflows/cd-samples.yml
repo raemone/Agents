@@ -24,7 +24,7 @@ jobs:
         with:
           registry: botagents.azurecr.io
           username: pusher
-          password: ${{ secrets.BOTAGENTS_TOKEN }}
+          password: ${{ secrets.BOTAGENTS_PUSHER_TOKEN }}
 
       - name: Install Node dependencies
         run: npm install
