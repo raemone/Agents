@@ -1,8 +1,7 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
 
-import { TurnState, MemoryStorage, TurnContext, AgentApplication, AttachmentDownloader }
-  from '@microsoft/agents-hosting'
+import { TurnState, MemoryStorage, TurnContext, AgentApplication, AttachmentDownloader } from '@microsoft/agents-hosting'
 import { version } from '@microsoft/agents-hosting/package.json'
 import { ActivityTypes } from '@microsoft/agents-activity'
 import os from 'os'
@@ -19,6 +18,21 @@ export const agentApp = new AgentApplication<ApplicationTurnState>({
   fileDownloaders: [downloader]
 })
 
+agentApp.conversationUpdate('membersAdded', async (context: TurnContext, state: ApplicationTurnState) => {
+  await context.sendActivity(`🚀 Empty Agent running on Agents SDK for JS version: ${version}. \n /help avaialable`)
+})
+
+agentApp.message('/help', async (context: TurnContext, state: ApplicationTurnState) => {
+  await context.sendActivity(
+    'I am an empty agent. I can respond to the following commands:\n' +
+    '- **/help** Show this help message\n' +
+    '- **/reset** Reset the conversation state\n' +
+    '- **/count**: Show the current count\n' +
+    '- **/diag**: Show the current activity in JSON format\n' +
+    '- **/state**: Show the current state in JSON format\n' +
+    '- **/runtime**: Show the current runtime information\n')
+})
+
 agentApp.message('/reset', async (context: TurnContext, state: ApplicationTurnState) => {
   state.deleteConversationState()
   await context.sendActivity('Ok I\'ve deleted the current conversation state.')
@@ -29,14 +43,14 @@ agentApp.message('/count', async (context: TurnContext, state: ApplicationTurnSt
   await context.sendActivity(`The count is ${count}`)
 })
 
+const md = (s: string) => '```json\n' + s + '\n```'
+
 agentApp.message('/diag', async (context: TurnContext, state: ApplicationTurnState) => {
-  await state.load(context, storage)
-  await context.sendActivity(JSON.stringify(context.activity))
+  await context.sendActivity(md(JSON.stringify(context.activity, null, 2)))
 })
 
 agentApp.message('/state', async (context: TurnContext, state: ApplicationTurnState) => {
-  await state.load(context, storage)
-  await context.sendActivity(JSON.stringify(state))
+  await context.sendActivity(md(JSON.stringify(state, null, 2)))
 })
 
 agentApp.message('/runtime', async (context: TurnContext, state: ApplicationTurnState) => {
@@ -45,11 +59,7 @@ agentApp.message('/runtime', async (context: TurnContext, state: ApplicationTurn
     nodeversion: process.version,
     sdkversion: version
   }
-  await context.sendActivity(JSON.stringify(runtime))
-})
-
-agentApp.conversationUpdate('membersAdded', async (context: TurnContext, state: ApplicationTurnState) => {
-  await context.sendActivity('🚀 Empty Agent running on Agents SDK for JS version: ' + version)
+  await context.sendActivity(md(JSON.stringify(runtime, null, 2)))
 })
 
 // Listen for ANY message to be received. MUST BE AFTER ANY OTHER MESSAGE HANDLERS
