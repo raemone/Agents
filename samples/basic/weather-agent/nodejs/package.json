@@ -20,9 +20,9 @@
   "type": "module",
   "description": "",
   "dependencies": {
-    "@langchain/langgraph": "^0.2.57",
+    "@microsoft/agents-hosting": "^0.2.0",
     "@langchain/openai": "^0.4.5",
-    "@microsoft/agents-hosting": "^0.1.49",
+    "@langchain/langgraph": "^0.2.57",
     "express": "^5.0.1"
   },
   "devDependencies": {

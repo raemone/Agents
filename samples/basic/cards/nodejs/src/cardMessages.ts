@@ -1,7 +1,7 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
-
-import { CardFactory, TurnContext, ActionTypes, Activity, ActivityTypes, Attachment } from '@microsoft/agents-hosting'
+import { ActionTypes, Attachment, Activity, ActivityTypes } from '@microsoft/agents-activity'
+import { CardFactory, TurnContext } from '@microsoft/agents-hosting'
 
 export class CardMessages {
   static async sendIntroCard (context: TurnContext): Promise<void> {
@@ -32,7 +32,7 @@ export class CardMessages {
 
   static async sendAnimationCard (context: TurnContext): Promise<void> {
     const card = CardFactory.animationCard(
-      'Microsoft Bot Framework',
+      'Microsoft Agents SDK',
       [
         { url: 'https://i.giphy.com/Ki55RUbOV5njy.gif' }
       ],
