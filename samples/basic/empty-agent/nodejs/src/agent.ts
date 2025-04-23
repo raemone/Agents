@@ -5,22 +5,20 @@ import { TurnState, MemoryStorage, TurnContext, AgentApplication, AttachmentDown
   from '@microsoft/agents-hosting'
 import { version } from '@microsoft/agents-hosting/package.json'
 import { ActivityTypes } from '@microsoft/agents-activity'
-
+import os from 'os'
 interface ConversationState {
-  count: number;
+  count: number
 }
 type ApplicationTurnState = TurnState<ConversationState>
 
 const downloader = new AttachmentDownloader()
 
-// Define storage and application
 const storage = new MemoryStorage()
 export const agentApp = new AgentApplication<ApplicationTurnState>({
   storage,
   fileDownloaders: [downloader]
 })
 
-// Listen for user to say '/reset' and then delete conversation state
 agentApp.message('/reset', async (context: TurnContext, state: ApplicationTurnState) => {
   state.deleteConversationState()
   await context.sendActivity('Ok I\'ve deleted the current conversation state.')
@@ -43,6 +41,7 @@ agentApp.message('/state', async (context: TurnContext, state: ApplicationTurnSt
 
 agentApp.message('/runtime', async (context: TurnContext, state: ApplicationTurnState) => {
   const runtime = {
+    osversion: `${os.platform} ${os.arch} ${os.release}`,
     nodeversion: process.version,
     sdkversion: version
   }
@@ -50,7 +49,7 @@ agentApp.message('/runtime', async (context: TurnContext, state: ApplicationTurn
 })
 
 agentApp.conversationUpdate('membersAdded', async (context: TurnContext, state: ApplicationTurnState) => {
-  await context.sendActivity('🚀 Echo bot running on Agents SDK version: ' + version)
+  await context.sendActivity('🚀 Empty Agent running on Agents SDK for JS version: ' + version)
 })
 
 // Listen for ANY message to be received. MUST BE AFTER ANY OTHER MESSAGE HANDLERS
