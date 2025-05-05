@@ -22,7 +22,7 @@ sequenceDiagram
     end
 ```
 
-# Auto, Teams SSO, No ConsentRequried
+# Auto, Teams SSO, No ConsentRequired
 
 ```mermaid
 sequenceDiagram
@@ -73,7 +73,7 @@ sequenceDiagram
     end
 ```
 
-# Auto, Teams SSO, No ConsentRequried, With OBO
+# Auto, Teams SSO, No ConsentRequired, With OBO
 
 ```mermaid
 sequenceDiagram

@@ -1,4 +1,4 @@
-# Auto, Teams OAuth, No ConsentRequried
+# Auto, Teams OAuth, No ConsentRequired
 
 ```mermaid
 sequenceDiagram
