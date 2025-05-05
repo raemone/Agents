@@ -126,7 +126,7 @@ sequenceDiagram
     end
 ```
 
-# Auto, Teams SSO, ConsentRequried
+# Auto, Teams SSO, ConsentRequired
 ```mermaid
 sequenceDiagram
     participant Teams
