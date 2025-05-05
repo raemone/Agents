@@ -1,0 +1,53 @@
+# Auto, Teams OAuth, No ConsentRequried
+
+```mermaid
+sequenceDiagram
+    participant Teams
+    participant Agent
+    participant TokenService
+
+    %% turn 1
+    rect rgba(128, 128, 128, .1)
+    Note over Teams,Agent: Turn 1
+    Teams->>Agent: Activity
+    activate Agent
+    Agent->>TokenService: GetToken()
+    activate TokenService
+    TokenService-->>Agent: null (404)
+    deactivate TokenService
+    Agent->>Teams: OAuthCard
+    Agent->>Agent: Store Continuation Activity
+    deactivate Agent
+    end
+
+Note over Teams: User Performs SignIn
+
+    %% turn 2
+    rect rgba(170, 128, 128, .1)
+    Note over Teams, Agent: Turn 2 (invoke)
+    Teams->>Agent: signin/verifyState
+    activate Agent
+    Agent->>TokenService: GetToken(code)
+    activate TokenService
+    TokenService-->>Agent: TokenResponse (200)
+    deactivate TokenService
+    Agent->>Agent: Clear OAuth State
+    Agent->>Agent: Async Proactive(Continuation)
+    Agent-->>Teams: InvokeResponse:200
+    deactivate Agent
+    end
+
+    %% turn 3
+    rect rgba(128, 128, 128, .1)
+    Note over Agent,Teams: Turn 3 (Continuation)
+    activate Agent
+    Agent->>TokenService: GetToken()
+    activate TokenService
+    TokenService-->>Agent: TokenResponse (200)
+    deactivate TokenService
+    Agent->>Agent: Route Continuation
+    Agent->>Teams: Activity
+    deactivate Agent
+    end
+```
+
