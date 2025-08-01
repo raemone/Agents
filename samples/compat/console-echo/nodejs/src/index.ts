@@ -11,7 +11,7 @@ const myBot = new DialogAgent();
 // A call to adapter.listen tells the adapter to start listening for incoming messages and events, known as "activities."
 // Activities are received as TurnContext objects by the handler function.
 adapter.listen( async ( context ) => {
-  myBot.onTurn( context );
+  await myBot.onTurn( context );
 } );
 
 // Emit a startup message with some instructions.

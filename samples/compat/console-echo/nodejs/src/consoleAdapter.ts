@@ -3,8 +3,8 @@
  * Licensed under the MIT License.
  */
 
-import { BaseAdapter, CloudAdapter, ResourceResponse, TurnContext } from '@microsoft/agents-hosting'
-import { ActivityTypes, Activity, ConversationReference } from '@microsoft/agents-activity'
+import { BaseAdapter, CloudAdapter, ResourceResponse, TurnContext } from '@microsoft/agents-hosting';
+import { ActivityTypes, Activity, ConversationReference } from '@microsoft/agents-activity';
 import * as readline from 'readline';
 
 /**
@@ -89,7 +89,7 @@ export class ConsoleAdapter extends CloudAdapter {
       const context = new TurnContext( this as unknown as BaseAdapter, activity );
       await this.runMiddleware( context, logic ).catch( err => {
         this.printError( err.toString() );
-        } );
+      } );
     } );
     return () => {
       rl.close();
@@ -147,12 +147,12 @@ export class ConsoleAdapter extends CloudAdapter {
     const responses = [];
     for ( const activity of activities ) {
       // Generate a unique id for each activity response
-      const id = (activity.id || `console-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`);
-      responses.push({ id });
+      const id = (activity.id || `console-${Date.now()}-${Math.random().toString(36).substring(2, 11)}`);
+      responses.push( { id } );
 
       switch ( activity.type ) {
         case 'delay':
-          await this.sleep( Number(activity.value) );
+          await this.sleep( Number( activity.value ) );
           break;
         case ActivityTypes.Message:
           if (
@@ -199,7 +199,6 @@ export class ConsoleAdapter extends CloudAdapter {
   createInterface ( options: any ) {
     return readline.createInterface( options );
   }
-  
 
   /**
    * Logs text to the console.
