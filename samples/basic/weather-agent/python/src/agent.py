@@ -1,126 +1,98 @@
-import re
-from os import environ
-from typing import Union
-from dotenv import load_dotenv
+import json
+from typing import Union, Literal, Any
 
-from openai import AsyncAzureOpenAI
-from pydantic import BaseModel, Field
+from pydantic import BaseModel
 
-from microsoft.agents.hosting.core import (
-    Authorization,
-    AgentApplication,
-    TurnState,
-    TurnContext,
-    MessageFactory,
-    MemoryStorage,
-)
-from microsoft.agents.hosting.aiohttp import CloudAdapter
-from microsoft.agents.authentication.msal import MsalConnectionManager
+from semantic_kernel import Kernel
+from semantic_kernel.connectors.ai.open_ai import OpenAIPromptExecutionSettings
+from semantic_kernel.connectors.ai.function_choice_behavior import FunctionChoiceBehavior
+from semantic_kernel.functions import KernelArguments
+from semantic_kernel.contents import ChatHistory
+from semantic_kernel.connectors.ai.open_ai import AzureChatCompletion
+from semantic_kernel.agents import ChatCompletionAgent, ChatHistoryAgentThread
 
-from microsoft.agents.activity import Attachment, load_configuration_from_env
-
-from agents import (
-    Agent as OpenAIAgent,
-    Model,
-    ModelProvider,
-    OpenAIChatCompletionsModel,
-    RunConfig,
-    Runner,
-)
-
-from .tools import get_weather, get_date
-
-load_dotenv()
-agents_sdk_config = load_configuration_from_env(environ)
-
-STORAGE = MemoryStorage()
-CONNECTION_MANAGER = MsalConnectionManager(**agents_sdk_config)
-ADAPTER = CloudAdapter(connection_manager=CONNECTION_MANAGER)
-AUTHORIZATION = Authorization(STORAGE, CONNECTION_MANAGER, **agents_sdk_config)
-
-# robrandao : todo
-from azure.identity import DefaultAzureCredential, get_bearer_token_provider
-
-token_provider = get_bearer_token_provider(
-    DefaultAzureCredential(), "https://cognitiveservices.azure.com/.default"
-)
-CLIENT = AsyncAzureOpenAI(
-    api_version=environ["AZURE_OPENAI_API_VERSION"],
-    azure_endpoint=environ["AZURE_OPENAI_ENDPOINT"],
-    azure_ad_token_provider=token_provider,
-)
-
-AGENT_APP = AgentApplication[TurnState](
-    storage=STORAGE, adapter=ADAPTER, authorization=AUTHORIZATION, **agents_sdk_config
-)
-
-
-class CustomModelProvider(ModelProvider):
-    def get_model(self, model_name: str | None) -> Model:
-        return OpenAIChatCompletionsModel(
-            model=model_name or "gpt-4o-mini", openai_client=CLIENT
-        )
-
-
-custom_model_provider = CustomModelProvider()
-
-agent = OpenAIAgent(
-    name="WeatherAgent",
-    instructions=""""
-    You are a friendly assistant that helps people find a weather forecast for a given time and place.
-    Do not reply with MD format nor plain text. You can ONLY respond in JSON format with the following JSON schema
-    {
-        "contentType": "'Text' if you don't have a forecast or 'AdaptiveCard' if you do",
-        "content": "{The content of the response, may be plain text, or JSON based adaptive card}"
-    }
-    You may ask follow up questions until you have enough information to answer the customers question,
-    but once you have a forecast forecast, make sure to format it nicely using an adaptive card.
-    """,
-    tools=[get_weather, get_date],
-)
-
+from src.plugins import DateTimePlugin, WeatherForecastPlugin, AdaptiveCardPlugin
 
 class WeatherForecastAgentResponse(BaseModel):
-    contentType: str = Field(pattern=r"^(Text|AdaptiveCard)$")
+    contentType: str = Literal["Text", "AdaptiveCard"]
     content: Union[dict, str]
 
+class WeatherForecastAgent:
 
-@AGENT_APP.conversation_update("membersAdded")
-async def on_members_added(context: TurnContext, _state: TurnState):
-    members_added = context.activity.members_added
-    for member in members_added:
-        if member.id != context.activity.recipient.id:
-            await context.send_activity("Hello and welcome!")
+    agent_name = "WeatherForecastAgent"
+    
+    agent_instructions = """
+            You are a friendly assistant that helps people find a weather forecast for a given time and place.
+            You may ask follow up questions until you have enough information to answer the customers question,
+            but once you have a forecast forecast, make sure to format it nicely using an adaptive card.
+            You should use adaptive JSON format to display the information in a visually appealing way
+            You should include a button for more details that points at https://www.msn.com/en-us/weather/forecast/in-{location} (replace {location} with the location the user asked about).
+            You should use adaptive cards version 1.5 or later.
+            
+            Respond only in JSON format with the following JSON schema:
+            
+            {
+                "contentType": "'Text' or 'AdaptiveCard' only",
+                "content": "{The content of the response, may be plain text, or JSON based adaptive card}"
+            }
+            """
+    
+    def __init__(self, client: AzureChatCompletion):
 
+        self.kernel = Kernel()
 
-@AGENT_APP.activity("message")
-async def on_message(context: TurnContext, _state: TurnState):
-    response = await Runner.run(
-        agent,
-        context.activity.text,
-        run_config=RunConfig(
-            model_provider=custom_model_provider,
-            tracing_disabled=True,
-        ),
-    )
-    print(f"Response: {response.final_output}")
-    json_response = response.final_output
-    if "json" in json_response and json_response.index("json") < json_response.index(
-        "{"
-    ):
-        # a common pattern with OpenAI responses is that they may contain a "json" prefix
-        json_response = json_response[json_response.index("{") :]
-    llm_response = WeatherForecastAgentResponse.model_validate_json(json_response)
+        execution_settings = OpenAIPromptExecutionSettings()
+        execution_settings.function_choice_behavior = FunctionChoiceBehavior.Auto()
+        execution_settings.temperature = 0
+        execution_settings.top_p = 1
 
-    activity = None
-    if llm_response.contentType == "AdaptiveCard":
-        activity = MessageFactory.attachment(
-            Attachment(
-                content_type="application/vnd.microsoft.card.adaptive",
-                content=llm_response.content,
+        self.agent = ChatCompletionAgent(
+            service=client,
+            name=WeatherForecastAgent.agent_name,
+            instructions=WeatherForecastAgent.agent_instructions,
+            kernel=self.kernel,
+            arguments=KernelArguments(
+                chat_history=ChatHistory(),
+                settings=execution_settings,
+                kernel=self.kernel
             )
         )
-    elif llm_response.contentType == "Text":
-        activity = MessageFactory.text(llm_response.content)
 
-    return await context.send_activity(activity)
+        self.agent.kernel.add_plugin(
+            plugin=DateTimePlugin(),
+            plugin_name="datetime"
+        )
+        self.kernel.add_plugin(
+            plugin=AdaptiveCardPlugin(),
+            plugin_name="adaptiveCard"
+        )
+        self.kernel.add_plugin(
+            plugin=WeatherForecastPlugin(),
+            plugin_name="weatherForecast"
+        )
+
+    async def invoke_agent(self, input: str, chat_history: ChatHistory) -> dict[str, Any]:
+
+        thread = ChatHistoryAgentThread()
+
+        chat_history.add_user_message(input)
+
+        resp: str = ""
+
+        async for chat in self.agent.invoke(chat_history, thread=thread):
+            chat_history.add_message(chat.content)
+            resp += chat.content.content
+
+        # if resp has a json\n prefix, remove it
+        if "json\n" in resp:
+            resp = resp.replace("json\n", "")
+            resp = resp.replace("```", "")
+        
+        resp = resp.strip()
+
+        try:
+            json_node: dict = json.loads(resp)
+            result = WeatherForecastAgentResponse.model_validate(json_node)
+            return result
+        except Exception as e:
+            return await self.invoke_agent("That response did not match the expected format. Please try again. Error: " + str(e), chat_history)
