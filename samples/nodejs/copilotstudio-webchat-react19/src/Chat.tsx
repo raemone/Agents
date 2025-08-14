@@ -9,23 +9,14 @@ import { useState, useEffect } from 'react'
 import { ConnectionSettings, CopilotStudioClient, CopilotStudioWebChat} from '@microsoft/agents-copilotstudio-client'
 import type { CopilotStudioWebChatConnection } from '@microsoft/agents-copilotstudio-client'
 import { acquireToken } from './acquireToken'
-
+import { settings } from './settings'
 const { BasicWebChat, Composer } = Components
 
 function Chat() {
     let agentsSettings: ConnectionSettings
 
     try {
-        agentsSettings = new ConnectionSettings({
-            // App ID of the App Registration used to log in, this should be in the same tenant as the Copilot.
-            appClientId: '',
-            // Tenant ID of the App Registration used to log in, this should be in the same tenant as the Copilot.
-            tenantId: '',
-            // Environment ID of the environment with the Copilot Studio App.
-            environmentId: '',
-            // Schema Name of the Copilot to use.
-            agentIdentifier: ''
-        })
+        agentsSettings = settings
     } catch (error) {
         console.error(error + '\nsettings.js Not Found. Rename settings.EXAMPLE.js to settings.js and fill out necessary fields')
         agentsSettings = {

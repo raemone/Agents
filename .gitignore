@@ -392,6 +392,7 @@ FodyWeavers.xsd
 #Ignore env files
 *.env
 settings.js
+settings.ts
 dist/
 static/
 devTools/
