@@ -71,24 +71,24 @@ This step requires permissions to create application identities in your Azure te
    - Fill in the values you recorded during setup using one of the two configurations:
      ### Option 1
      ```javascript
-     export const process = {
+     export const settings = new ConnectionSettings({
        env: {
          appClientId: 'your-app-client-id-here',
          tenantId: 'your-tenant-id-here',
          environmentId: 'your-environment-id-here',
          agentIdentifier: 'your-schema-name-here',
        }
-     }
+     })
      ```
      ### Option 2
      ```javascript
-     export const process = {
+     export const settings = new ConnectionSettings({
        env: {
          appClientId: 'your-app-client-id-here',
          tenantId: 'your-tenant-id-here',
          directConnectUrl: 'your-direct-connect-url-here'
        }
-     }
+     })
      ```
 
 
